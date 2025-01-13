@@ -1,0 +1,116 @@
+[build-system]
+# Minimum requirements for the build system to execute
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pastasdash"
+version = "0.1.0"
+description = "Dashboard for interactively viewing head time series and pastas models."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dash-bootstrap-components>=1.6.1rc2",
+    "dash>=2.18.2",
+    "flask-caching>=2.3.0",
+    "geopandas>=1.0.1",
+    "hydropandas",
+    "ipykernel>=7.0.0a0",
+    "ipywidgets>=8.1.5",
+    "jupyter>=1.1.1",
+    "pastas",
+    "pastastore",
+    "tomli>=2.2.1",
+    "waitress>=3.0.2",
+]
+keywords = [
+    "hydrology",
+    "dashboard",
+    "time series",
+    "error detection",
+    "validation",
+    "analysis",
+    "plotly",
+    "dash",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Hydrology",
+]
+
+[project.urls]
+homepage = "https://github.com/pastas/pastasdash"
+repository = "https://github.com/pastas/pastasdash"
+
+[project.optional-dependencies]
+lint = ["ruff"]
+
+[project.scripts]
+pastasdash = "pastasdash.cli:cli_main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.setuptools.package-data]
+"pastasdash.app" = ["*.toml"]
+"pastasdash.assets" = ["*.md", "*.css"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pastasdash.version.__version__" }
+
+[tool.uv]
+prerelease = "allow"
+
+[tool.uv.sources]
+pastas = { path = "../pastas", editable = true }
+pastastore = { path = "../pastastore", editable = true }
+hydropandas = { path = "../hydropandas", editable = true }
+pastasdash = { workspace = true }
+
+[dependency-groups]
+dev = ["pastasdash"]
+
+[tool.ruff]
+line-length = 88
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+# See: https://docs.astral.sh/ruff/rules/
+select = [
+    "C4",  # flake8-comprehensions
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "PT",  # pytest-style
+    "D",   # pydocstyle
+    "B",   # flake8-bugbear
+    "NPY", # numpy
+]
+ignore = [
+    "D100", # Missing docstring in public module
+    "D101", # Missing docstring in public class
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
+    "D104", # Missing docstring in public package    
+    "D105", # Missing docstring in magic method
+    "D401", # First line should be in imperative mood
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
