@@ -47,7 +47,7 @@ button[id*="clear-button"] {
     background-color: darkred !important;
 }
 
-.loading-wrapper-qc-result>div {
+.loading-wrapper>div {
     visibility: visible !important;
 
     /* visibility: none; */
@@ -94,7 +94,7 @@ button[id*="clear-button"] {
 /* ---------------------------------------
    * textarea
    */
-   .dbc textarea {
+.dbc textarea {
     background-color: var(--bs-body-bg) !important;
     color: var(--bs-body-color) !important;
     border: var(--bs-border-width) solid var(--bs-border-color) !important;
@@ -279,9 +279,25 @@ body .dbc .dash-table-container .dash-spreadsheet-container .dash-spreadsheet-in
     background-color: transparent;
 }
 
+/* reduce row height */
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner tr {
+    min-height: 25px;
+    height: 25px;
+}
+
+/* reduce header height */
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner tr:first-of-type {
+    min-height: 30px;
+    height: 30px;
+}
+
 /* ALERT */
 .alert {
     height: 50px;
+    position: absolute;
+    left: 50%;
+    top: 0.5%;
+    transform: translateX(-50%);
 }
 
 #alert-body {
@@ -713,16 +729,17 @@ code.hljs {
 .dbc-row-selectable input[type="checkbox"],
 .dbc-row-selectable input[type="radio"] {
     border: var(--bs-border-width) solid var(--bs-border-color) !important;
-    color: var(--bs-body-color);
+    color: white;
     font-weight: bold;
-    background-color: inherit;
+    background-color: #006f92;
     width: 1em;
     height: 1em;
     outline: 0;
     padding: 0;
     float: left;
-    appearance: none;
-    margin-right: 5px;
+    appearance: auto;
+    /* margin-right: 5px; */
+    margin-left: 7px;
 }
 
 .dbc-row-selectable input[type="radio"] {
@@ -732,7 +749,7 @@ code.hljs {
 
 .dbc-row-selectable input[type="radio"]:checked::before {
     content: "";
-    background-color: var(--bs-primary);
+    background-color: #006f92;
     float: left;
     height: 100%;
     width: 100%;
@@ -743,26 +760,32 @@ code.hljs {
 
 .dbc-row-selectable input[type="checkbox"]:checked::before {
     content: "✓";
+    /* background-color: #006f92; */
     float: left;
     width: 1em;
     height: 1em;
     line-height: 1em;
     text-align: center;
+    /* font-family: monospace; */
+    appearance: auto;
 }
 
 /* ---- end dbc-row-selectable ------------------------- */
 
 .col-right-border {
-    height:100%;
-    position:relative;
+    height: 100%;
+    position: relative;
 }
 
 .col-right-border::after {
-    content:"";
-    position:absolute;
-    top:22.5%;
-    right:0;
-    width:3px;
-    height:55%;
-    background:grey;
+    content: "";
+    position: absolute;
+    top: 0%;
+    right: 0;
+    width: 3px;
+    height: 102%;
+    background: white;
+    border-color: gray;
+    border-style: solid;
+
 }
