@@ -1,3 +1,7 @@
+import os
+import tempfile
+from contextlib import contextmanager
+
 import numpy as np
 from pyproj import Transformer
 
@@ -68,7 +72,7 @@ def get_plotting_zoom_level_and_center_coordinates(longitudes=None, latitudes=No
 
     # Finally, return the zoom level and the associated boundary-box center coordinates
     # NOTE: manual correction to view all of obs because of non-square window/extent?.
-    return zoom + 3, b_box["center"]
+    return zoom, b_box["center"]
 
 
 def get_transformer(crs_from, crs_to):
@@ -84,3 +88,73 @@ def add_latlon_to_dataframe(
     df["lat"] = latlon[:, 0]
     df["lon"] = latlon[:, 1]
     return df
+
+
+def derive_input_parameters(v, precision=2):
+    """Derive form parameters based on the type and value of the input.
+
+    Parameters
+    ----------
+    v : any
+        The input value to derive form parameters from. It can be of any type including
+        tuple, callable, float, int, np.integer, str, or other types.
+
+    Returns
+    -------
+    v : str or int
+        The processed value, converted to a string if necessary.
+    input_type : str
+        The type of input, either "text" or "number".
+    step : float or int or str or None
+        The step value for numeric inputs, or "any" for text inputs, or None if
+        not applicable.
+
+    Notes
+    -----
+    - If `v` is a float, the input type is "number" and the step is calculated based
+      on the number of decimals.
+    - If `v` is an integer, the input type is "number" and the step is calculated based
+      on the magnitude of the value.
+    - If `v` is a string, the input type is "text" and the step is set to "any".
+    - For other types, the input is converted to a string.
+    """
+    input_type = "text"
+    ndecimals = None
+    step = None
+
+    if isinstance(v, float):
+        input_type = "number"
+        if np.floor(np.log10(np.abs(v))) <= -2:
+            vstr = f"{v:.{precision}e}"
+        elif np.floor(np.log10(np.abs(v))) > 5:
+            vstr = f"{v:.{precision}e}"
+        else:
+            vstr = f"{v:.{precision}f}"
+        ndecimals = len(vstr) - vstr.find(".") - 1
+        step = 10 ** (-ndecimals) / 2
+        v = float(vstr)
+    elif isinstance(v, (int, np.integer)):
+        input_type = "number"
+        step = int(np.min([10 ** np.floor(np.log10(np.abs(v))), 10]))
+        if isinstance(v, bool):
+            v = int(v)
+    elif isinstance(v, str):
+        input_type = "text"
+        step = "any"
+    else:
+        input_type = "text"
+        step = None
+        v = str(v)
+
+    return v, input_type, step
+
+
+@contextmanager
+def temporary_file(data):
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp.write(data)
+    temp.close()
+    try:
+        yield temp.name
+    finally:
+        os.unlink(temp.name)
