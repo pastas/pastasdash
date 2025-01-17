@@ -6,6 +6,8 @@ Dashboard for interactively viewing time series and [Pastas](https://pastas.dev)
 
 It is currently recommended to install PastasDash in development mode.
 
+The very latest version of the `pastastore` dev branch is required to be able to run this dashboard.
+
 Using `uv`:
 
 1. Clone the repository.
