@@ -1,6 +1,6 @@
 from dash import Dash, dcc, html
 
-from pastasdash.application.components import button_help_modal
+from pastasdash.application.components import buttons
 from pastasdash.application.components.shared import ids, tabcontainer
 from pastasdash.application.datasource import PastaStoreInterface
 
@@ -26,6 +26,8 @@ def create_layout(app: Dash, pstore: PastaStoreInterface) -> html.Div:
             # stores for tab interactivity
             dcc.Store(id=ids.SELECTED_OSERIES_STORE),
             dcc.Store(id=ids.PASTAS_MODEL_STORE),
+            dcc.Store(id=ids.DOWNLOAD_MAP_DATA_STORE),
+            dcc.Store(id=ids.PASTASTORE_CONFIG_FILE_STORE),
             # avoiding duplicate callback stores
             dcc.Store(id=ids.OVERVIEW_TABLE_SELECTION_1),
             dcc.Store(id=ids.OVERVIEW_TABLE_SELECTION_2),
@@ -41,7 +43,8 @@ def create_layout(app: Dash, pstore: PastaStoreInterface) -> html.Div:
                 children=[
                     html.H1(app.title, id="app_title"),
                     html.Div(id=ids.ALERT_DIV),
-                    button_help_modal.render(),
+                    buttons.render_load_pastastore_button(),
+                    buttons.render_help_button_modal(),
                 ],
             ),
             tabcontainer.render(),
