@@ -14,10 +14,6 @@ dependencies = [
     "dash>=2.18.2",
     "flask-caching>=2.3.0",
     "geopandas>=1.0.1",
-    "hydropandas",
-    "ipykernel>=7.0.0a0",
-    "ipywidgets>=8.1.5",
-    "jupyter>=1.1.1",
     "pastas",
     "pastastore",
     "tomli>=2.2.1",
@@ -27,8 +23,8 @@ keywords = [
     "hydrology",
     "dashboard",
     "time series",
-    "error detection",
-    "validation",
+    "time series models",
+    "pastas",
     "analysis",
     "plotly",
     "dash",
@@ -68,7 +64,7 @@ include-package-data = true
 find = {}
 
 [tool.setuptools.package-data]
-"pastasdash.app" = ["*.toml"]
+"pastasdash.application" = ["*.toml"]
 "pastasdash.assets" = ["*.md", "*.css"]
 
 [tool.setuptools.dynamic]
@@ -80,7 +76,6 @@ prerelease = "allow"
 [tool.uv.sources]
 pastas = { path = "../pastas", editable = true }
 pastastore = { path = "../pastastore", editable = true }
-hydropandas = { path = "../hydropandas", editable = true }
 pastasdash = { workspace = true }
 
 [dependency-groups]
