@@ -41,7 +41,9 @@ def render(pstore: PastaStoreInterface, selected_data=None):
         "screen_bot",
         "x",
         "y",
-        "metingen",
+        "n_observations",
+        "tmin",
+        "tmax",
     ]
     return html.Div(
         id="table-div",
@@ -90,29 +92,29 @@ def render(pstore: PastaStoreInterface, selected_data=None):
                         "type": "numeric",
                         "format": {"specifier": ".2f"},
                     },
-                    # {
-                    #     "id": "tmin",
-                    #     "name": "Start date",
-                    #     "type": "datetime",
-                    # },
-                    # {
-                    #     "id": "tmax",
-                    #     "name": "End date",
-                    #     "type": "datetime",
-                    # },
-                    # {
-                    #     "id": "n_observations",
-                    #     "name": "No. of obs",
-                    #     "type": "numeric",
-                    #     "format": {"specifier": ".0f"},
-                    # },
+                    {
+                        "id": "tmin",
+                        "name": "Start date",
+                        "type": "datetime",
+                    },
+                    {
+                        "id": "tmax",
+                        "name": "End date",
+                        "type": "datetime",
+                    },
+                    {
+                        "id": "n_observations",
+                        "name": "N_obs",
+                        "type": "numeric",
+                        "format": {"specifier": ".0f"},
+                    },
                 ],
                 fixed_rows={"headers": True},
                 page_action="none",
                 filter_action="native",
                 sort_action="native",
                 style_table={
-                    "height": "45vh",
+                    # "height": "45vh",
                     # "overflowY": "auto",
                     "margin-top": 15,
                 },
@@ -127,14 +129,16 @@ def render(pstore: PastaStoreInterface, selected_data=None):
                     for c in ["name"]
                 ]
                 + [
-                    {"if": {"column_id": "name"}, "width": "15%"},
+                    {"if": {"column_id": "name"}, "width": "18%"},
                     # {"if": {"column_id": "nitg_code"}, "width": "10%"},
                     # {"if": {"column_id": "tube_number"}, "width": "10%"},
                     {"if": {"column_id": "x"}, "width": "7.5%"},
                     {"if": {"column_id": "y"}, "width": "7.5%"},
-                    {"if": {"column_id": "screen_top"}, "width": "15%"},
-                    {"if": {"column_id": "screen_bot"}, "width": "15%"},
-                    # {"if": {"column_id": "metingen"}, "width": "10%"},
+                    {"if": {"column_id": "screen_top"}, "width": "7.5%"},
+                    {"if": {"column_id": "screen_bot"}, "width": "7.5%"},
+                    {"if": {"column_id": "tmin"}, "width": "22.5%"},
+                    {"if": {"column_id": "tmax"}, "width": "22.5%"},
+                    {"if": {"column_id": "n_observations"}, "width": "7%"},
                 ],
                 style_data_conditional=[
                     {

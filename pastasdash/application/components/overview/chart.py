@@ -61,6 +61,7 @@ def render(pstore, selected_data):
                         },
                         style={
                             "height": "40vh",
+                            "margin-bottom": 0,
                         },
                     ),
                 ],
@@ -70,7 +71,7 @@ def render(pstore, selected_data):
         style={
             "position": "relative",
             "justify-content": "center",
-            "margin-bottom": 10,
+            "margin-bottom": 0,
         },
     )
 

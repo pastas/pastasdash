@@ -95,7 +95,6 @@ def register_overview_callbacks(app, pstore):
             "screen_bot",
             # "metingen",
         ]
-
         # check for newest entry whether selection was made from table
         date = pd.Timestamp("1800-01-01 00:00:00")  # some early date
         table_selected = False
@@ -136,9 +135,16 @@ def register_overview_callbacks(app, pstore):
             if table_selected:
                 table = no_update
             else:
-                table = (
-                    pstore.oseries.loc[names, usecols].reset_index().to_dict("records")
-                )
+                if names is None:
+                    table = (
+                        pstore.oseries.loc[:, usecols].reset_index().to_dict("records")
+                    )
+                else:
+                    table = (
+                        pstore.oseries.loc[names, usecols]
+                        .reset_index()
+                        .to_dict("records")
+                    )
 
             try:
                 chart = plot_timeseries(pstore, names)
@@ -157,7 +163,7 @@ def register_overview_callbacks(app, pstore):
                         (pd.Timestamp.now().isoformat(), False),
                     )
             except Exception as e:
-                # raise e  # for debugging
+                raise e  # for debugging
                 return (
                     {"layout": {"title": "No series selected."}},
                     pstore.oseries.loc[:, usecols].reset_index().to_dict("records"),
@@ -218,30 +224,28 @@ def register_overview_callbacks(app, pstore):
         if table_selection is None:
             return no_update, no_update, (pd.Timestamp.now().isoformat(), False)
 
-        rows = np.unique([cell["row"] for cell in table_selection]).tolist()
-        df = pd.DataFrame.from_dict(table, orient="columns")
+        rows = np.unique([cell["row_id"] for cell in table_selection]).tolist()
+        df = pd.DataFrame.from_dict(table, orient="columns").set_index("id")
         loc = df.loc[rows]
-        pts = loc["id"].tolist()
+        pts = loc.index.tolist()
 
-        dfm = pstore.oseries.reset_index().loc[pts].copy()
-        dfm["curveNumber"] = 1  # all locs plotted in trace 1 for map highlighting
-        mask = dfm.loc[:, "metingen"] > 0
+        dfm = pstore.oseries.reset_index().set_index("id").loc[pts]
+        dfm["curveNumber"] = 0
         # update selected points
         mappatch = Patch()
-        mappatch["data"][1]["selectedpoints"] = dfm.loc[:, "id"].tolist()
-        mappatch["data"][0]["selectedpoints"] = dfm.loc[~mask, "id"].tolist()
+        mappatch["data"][0]["selectedpoints"] = dfm.index.tolist()
 
         selectedData = {
             "points": [
                 {
-                    "curveNumber": dfm["curveNumber"].loc[i],
-                    "pointNumber": dfm["id"].loc[i],
-                    "pointIndex": dfm["id"].loc[i],
-                    "lon": dfm["lon"].loc[i],
-                    "lat": dfm["lat"].loc[i],
-                    "text": dfm["name"].loc[i],
+                    "curveNumber": dfm.at[i, "curveNumber"],
+                    "pointNumber": i,
+                    "pointIndex": i,
+                    "lon": dfm.at[i, "lon"],
+                    "lat": dfm.at[i, "lat"],
+                    "text": dfm.at[i, "name"],
                 }
-                for i in loc["id"]
+                for i in pts
             ]
         }
         return (

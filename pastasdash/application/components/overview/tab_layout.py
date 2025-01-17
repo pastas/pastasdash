@@ -25,11 +25,7 @@ def render():
     )
 
 
-@conditional_decorator(
-    cache.memoize,
-    settings["CACHING"],
-    timeout=TIMEOUT,
-)
+@conditional_decorator(cache.memoize, settings["CACHING"], timeout=TIMEOUT)
 def render_content(pstore: PastaStoreInterface, selected_data: str):
     """Renders the content for the overview tab.
 

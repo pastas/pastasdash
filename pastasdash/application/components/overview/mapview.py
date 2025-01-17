@@ -1,4 +1,3 @@
-import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
 from dash import dcc
@@ -55,20 +54,64 @@ def plot_mapview(
     dict
         dictionary containing plotly maplayout and mapdata
     """
-    oseries = add_latlon_to_dataframe(pstore.oseries.reset_index())
-    stresses = add_latlon_to_dataframe(pstore.stresses.reset_index())
+    if pstore.empty:
+        maplayout = {
+            "margin": {"t": 0, "b": 0, "l": 0, "r": 0},
+            "font": {"color": "#000000", "size": 11},
+            "paper_bgcolor": "white",
+            "clickmode": "event+select",
+            "map": {
+                "bearing": 0,
+                "center": {"lon": 5.104480, "lat": 52.092876},
+                "pitch": 0,
+                "zoom": 5.5,
+                "style": "outdoors",
+            },
+            "legend": {"x": 0.01, "y": 0.99, "xanchor": "left", "yanchor": "top"},
+            "uirevision": False,
+            "modebar": {
+                "bgcolor": "rgba(255,255,255,0.9)",
+            },
+            "selectdirection": "d",
+        }
+        return {"data": [{"type": "scattermap"}], "layout": maplayout}
+    oseries = add_latlon_to_dataframe(pstore.oseries)
+    stresses = add_latlon_to_dataframe(pstore.stresses)
 
-    oseries["z"] = oseries.loc[:, ["screen_top", "screen_bot"]].mean(axis=1)
-    oseries.sort_values("z", ascending=True, inplace=True)
     msize = 15 + 100 * (oseries["z"].max() - oseries["z"]) / (
         oseries["z"].max() - oseries["z"].min()
     )
     msize.fillna(20, inplace=True)
 
     if selected_data is not None:
-        pts_data = np.nonzero(oseries["name"].isin(selected_data))[0].tolist()
+        if isinstance(selected_data[0], int):
+            pts_data = selected_data
+        elif isinstance(selected_data[0], str):
+            pts_data = oseries.loc[selected_data, "id"].tolist()
+        else:
+            raise ValueError("selected_data should be a list of integers or strings.")
+
+        # # attempt getting selected oseries on top, for better visibility in plot
+        # # highlighting
+        # reordered_idx = [i for i in oseries.index if i not in pts_data] + pts_data
+        # oseries = oseries.loc[reordered_idx]
+
+        selectedData = {
+            "points": [
+                {
+                    "curveNumber": 0,
+                    "pointNumber": idx,
+                    "pointIndex": idx,
+                    "lon": oseries.reset_index().set_index("id").loc[idx, "lon"],
+                    "lat": oseries.reset_index().set_index("id").loc[idx, "lat"],
+                    "text": oseries.reset_index().set_index("id").loc[idx, "name"],
+                }
+                for idx in pts_data
+            ]
+        }
     else:
         pts_data = None
+        selectedData = None
 
     # oseries data for map
     oseries_data = {
@@ -77,10 +120,10 @@ def plot_mapview(
         "name": "Observation wells",
         "customdata": oseries.loc[:, "z"],
         "type": "scattermap",
-        "text": oseries.loc[:, "name"].tolist(),
+        "text": oseries.index.tolist(),
         "textposition": "top center",
         "textfont": {"size": 12, "color": "black"},
-        "mode": "markers+text",
+        "mode": "markers",
         "marker": go.scattermap.Marker(
             size=msize,
             opacity=0.7,
@@ -88,7 +131,7 @@ def plot_mapview(
             sizemin=2,
             sizemode="area",
             color=oseries["z"],
-            colorscale=px.colors.sequential.Reds,
+            colorscale=px.colors.sequential.Tealgrn,
             reversescale=False,
             showscale=True,
             colorbar={
@@ -104,14 +147,15 @@ def plot_mapview(
         "showlegend": True,
         "legendgroup": "DATA",
         "selectedpoints": pts_data,
-        "unselected": {"marker": {"opacity": 0.5}},
-        "selected": {"marker": {"opacity": 1.0, "color": "red", "size": 9}},
+        "unselected": {"marker": {"opacity": 0.1}},
+        "selected": {"marker": {"opacity": 1.0, "color": "black", "size": 9}},
+        "selectedData": selectedData,
     }
 
     # stresses data for map
     kind_dict = {}
     for i, k in enumerate(stresses.kind.unique()):
-        kind_dict[k] = px.colors.qualitative.Antique[i]
+        kind_dict[k] = px.colors.qualitative.G10[i]
 
     stresses_data = []
     for kind, sdf in stresses.groupby("kind"):
@@ -121,14 +165,14 @@ def plot_mapview(
                 "lon": sdf["lon"],
                 "name": kind,
                 "type": "scattermap",
-                "text": sdf["name"].tolist(),
+                "text": sdf.index.tolist(),
                 "textposition": "top center",
                 "textfont": {
                     "size": 11,
                     "color": "darkslategray",
                 },
                 "customdata": sdf["kind"],
-                "mode": "markers+text",
+                "mode": "markers",
                 "marker": go.scattermap.Marker(
                     symbol="circle",
                     size=10,
@@ -141,7 +185,7 @@ def plot_mapview(
                     + "<extra></extra> "
                 ),
                 "showlegend": True,
-                "unselected": {"marker": {"opacity": 0.9}},
+                "unselected": {"marker": {"opacity": 0.7}},
                 "selected": {"marker": {"opacity": 1.0}},
             }
         )
@@ -152,8 +196,9 @@ def plot_mapview(
         zoom, center = get_plotting_zoom_level_and_center_coordinates(
             oseries.lon.values, oseries.lat.values
         )
+        zoom = zoom + 3  # NOTE: manual correction to show all obs
     else:
-        sel = oseries.iloc[selected_data]
+        sel = oseries.reset_index().set_index("id").loc[pts_data]
         zoom, center = get_plotting_zoom_level_and_center_coordinates(
             sel.lon.values, sel.lat.values
         )
@@ -174,16 +219,6 @@ def plot_mapview(
             "zoom": zoom,
             # default map style (some options listed, not all support labels)
             "style": "outdoors",
-            # public styles
-            # style="carto-positron",
-            # style="open-street-map",
-            # style="stamen-terrain",
-            # style="basic",
-            # style="streets",
-            # style="light",
-            # style="dark",
-            # style="satellite",
-            # style="satellite-streets"
         },
         "legend": {"x": 0.01, "y": 0.99, "xanchor": "left", "yanchor": "top"},
         # "legend": {"x": 0.99, "y": 0.99, "xanchor": "right", "yanchor": "top"},
@@ -191,6 +226,7 @@ def plot_mapview(
         "modebar": {
             "bgcolor": "rgba(255,255,255,0.9)",
         },
+        "selectdirection": "d",
     }
 
     if update_extent:
