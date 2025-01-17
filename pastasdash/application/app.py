@@ -2,7 +2,7 @@
 import logging
 
 import dash_bootstrap_components as dbc
-import pastastore as pst
+import pastas as ps
 from dash import Dash
 
 from pastasdash.application.cache import cache
@@ -15,19 +15,17 @@ logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+ps.set_log_level("WARNING")
+
 # %% set some variables
 external_stylesheets = [
     dbc.themes.FLATLY,
     "https://use.fontawesome.com/releases/v6.5.1/css/all.css",
+    "https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css",
 ]
 
 # %% create pastastore
-conn = pst.PasConnector(
-    name="zeeland_bro",
-    path="/home/david/github/gwdatalens/gwdatalens/pastasdb/",
-)
-pstore = pst.PastaStore(conn)
-ipstore = PastaStoreInterface(pstore)
+ipstore = PastaStoreInterface()
 
 # %% build app
 # create app
