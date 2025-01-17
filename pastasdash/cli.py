@@ -6,7 +6,7 @@ from pastasdash.application.settings import settings
 
 
 def cli_main():
-    """GW DataLens dashboard command-line interface.
+    """PastasDash dashboard command-line interface.
 
     Usage
     -----
