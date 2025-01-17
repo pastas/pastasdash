@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from dash import dcc
 
 from pastasdash.application.components.models import (
-    buttons,
+    button,
     datepicker,
     dropdown,
     plots,
@@ -57,8 +57,8 @@ def render_content(pstore: PastaStoreInterface, selected_data: List):
                         [datepicker.render_datepicker_tmax(pstore, selected_data)],
                         width="auto",
                     ),
-                    dbc.Col([buttons.render_solve_button()], width="auto"),
-                    dbc.Col([buttons.render_save_button()], width="auto"),
+                    dbc.Col([button.render_solve_button()], width="auto"),
+                    dbc.Col([button.render_save_button()], width="auto"),
                 ],
             ),
             dbc.Row(

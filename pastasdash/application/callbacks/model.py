@@ -55,11 +55,9 @@ def register_model_callbacks(app, pstore):
         Exception
             If there is an error in retrieving or plotting the model.
         """
-        # print(value)
         if value is not None:
             try:
                 ml = pstore.get_models(value)
-                print(value, ml)
                 return (
                     ml.plotly.results(),
                     ml.plotly.diagnostics(),
@@ -95,9 +93,9 @@ def register_model_callbacks(app, pstore):
                 {"layout": {"title": "No model"}},
                 True,
                 (
-                    True,  # show alert
+                    False,  # show alert
                     "success",  # alert color
-                    "Did nothing",  # empty message
+                    "Cleared plots.",  # empty message
                 ),
                 None,
                 None,
