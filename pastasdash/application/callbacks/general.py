@@ -1,9 +1,13 @@
+import base64
+
 import dash_bootstrap_components as dbc
+import pastastore as pst
 from dash import Input, Output, State, ctx, html
 from dash.exceptions import PreventUpdate
 
 from pastasdash.application.components.shared import ids, tabcontainer
 from pastasdash.application.settings import settings
+from pastasdash.application.utils import temporary_file
 
 
 def register_general_callbacks(app, pstore):
@@ -37,11 +41,14 @@ def register_general_callbacks(app, pstore):
     @app.callback(
         Output(ids.TAB_CONTENT, "children"),
         Output(ids.ALERT_TAB_RENDER, "data"),
+        Output(ids.LOAD_PASTASTORE_BUTTON, "contents"),
         Input(ids.TAB_CONTAINER, "value"),
+        Input(ids.LOAD_PASTASTORE_BUTTON, "contents"),
         State(ids.SELECTED_OSERIES_STORE, "data"),
         # State(ids.TRAVAL_RESULT_FIGURE_STORE, "data"),
+        # prevent_initial_call=True,
     )
-    def render_tab_content(tab, selected_data=None):
+    def render_tab_content(tab, pastastore_config, selected_data=None):
         """Render tab content.
 
         Parameters
@@ -56,6 +63,30 @@ def register_general_callbacks(app, pstore):
         tuple
             tuple containing tab content and alert data
         """
+        empty_alert = (
+            False,  # show alert
+            "success",  # alert color
+            "",  # empty alert message
+        )
+        # Load pastastore from .pastastore config file
+        reset_config_file_store = None
+        if pastastore_config is not None:
+            content_type, content_string = pastastore_config.split(",")
+            decoded = base64.b64decode(content_string)
+            if "zip" in content_type:
+                with temporary_file(decoded) as f:
+                    pastastore = pst.PastaStore.from_zip(f)
+                if settings["PARALLEL"]:
+                    raise ValueError(
+                        "Parallel processing is not supported for DictConnector files. "
+                        "Please modify the PastasDash config file and set "
+                        "`PARALLEL: false`."
+                    )
+            else:
+                with temporary_file(decoded) as f:
+                    pastastore = pst.PastaStore.from_pastastore_config_file(f)
+            pstore.set_pastastore(pastastore)
+
         if tab == ids.TAB_OVERVIEW:
             if (
                 selected_data is not None
@@ -64,13 +95,10 @@ def register_general_callbacks(app, pstore):
                 selected_data = None
             return (
                 tabcontainer.tab_overview.render_content(pstore, selected_data),
-                (
-                    False,  # show alert
-                    "success",  # alert color
-                    "",  # empty alert message
-                ),
+                empty_alert,
+                reset_config_file_store,
             )
-        if tab == ids.TAB_MODEL:
+        elif tab == ids.TAB_MODEL:
             if (
                 selected_data is not None
                 and len(selected_data) > settings["SERIES_LOAD_LIMIT"]
@@ -85,36 +113,25 @@ def register_general_callbacks(app, pstore):
                     ),  # alert message
                 )
             else:
-                alert = (
-                    False,  # show alert
-                    "success",  # alert color
-                    "",  # empty alert message
-                )
+                alert = empty_alert
 
             return (
                 tabcontainer.tab_model.render_content(pstore, selected_data),
                 alert,
+                reset_config_file_store,
             )
-        # elif tab == ids.TAB_QC:
-        #     return (
-        #         tab_qc.render_content(data, selected_data),
-        #         (
-        #             False,  # show alert
-        #             "success",  # alert color
-        #             "",  # empty alert message
-        #         ),
-        #     )
-        # elif tab == ids.TAB_QC_RESULT:
-        #     return (
-        #         tab_qc_result.render_content(
-        #             data, figure[1] if figure is not None else None
-        #         ),
-        #         (
-        #             False,  # show alert
-        #             "success",  # alert color
-        #             "",  # empty alert message
-        #         ),
-        #     )
+        elif tab == ids.TAB_MAPS:
+            return (
+                tabcontainer.tab_maps.render_content(pstore),
+                empty_alert,
+                reset_config_file_store,
+            )
+        elif tab == ids.TAB_COMPARE:
+            return (
+                tabcontainer.tab_compare.render_content(pstore, selected_data),
+                empty_alert,
+                reset_config_file_store,
+            )
         else:
             raise PreventUpdate
 
@@ -164,3 +181,24 @@ def register_general_callbacks(app, pstore):
                 is_open=is_open,
             ),
         ]
+
+    # @app.callback(
+    #     Output(ids.PASTASTORE_CONFIG_FILE_STORE, "data", allow_duplicate=True),
+    #     Input(ids.LOAD_PASTASTORE_BUTTON, "contents"),
+    #     prevent_initial_call=True,
+    # )
+    # def load_pastastore(contents):
+    #     """Store pastastore config file.
+
+    #     Parameters
+    #     ----------
+    #     contents : tuple
+    #         contents from upload component
+
+    #     Returns
+    #     -------
+    #     str
+    #         64bit encoded content string
+    #     """
+    #     if contents is not None:
+    #         return contents
