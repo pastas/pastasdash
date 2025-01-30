@@ -171,17 +171,13 @@ class PastaStoreInterface:
             stresses.index.name = "name"
         return stresses
 
-    # @property
-    # @functools.lru_cache
-    # def unique_parameters(self):
-    #     param_set = set()
-    #     for mldict in self.pstore.get_models(None, return_dict=True):
-    #         param_set |= set(mldict["parameters"].index)
-    #     return list(param_set)
-
     @property
+    @functools.lru_cache
     def unique_parameters(self):
-        return ["recharge_A", "recharge_a", "recharge_f", "constant_d", "noise_alpha"]
+        param_set = set()
+        for mldict in self.pstore.get_models(None, return_dict=True):
+            param_set |= set(mldict["parameters"].index)
+        return list(param_set)
 
     @property
     def timeseries(self):
