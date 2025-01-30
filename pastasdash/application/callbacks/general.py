@@ -2,7 +2,7 @@ import base64
 
 import dash_bootstrap_components as dbc
 import pastastore as pst
-from dash import Input, Output, State, ctx, html
+from dash import Input, Output, State, ctx, html, no_update
 from dash.exceptions import PreventUpdate
 
 from pastasdash.application.components.shared import ids, tabcontainer
@@ -85,8 +85,19 @@ def register_general_callbacks(app, pstore):
             else:
                 with temporary_file(decoded) as f:
                     pastastore = pst.PastaStore.from_pastastore_config_file(f)
-            pstore.set_pastastore(pastastore)
-
+            try:
+                pstore.set_pastastore(pastastore)
+            except ValueError as e:
+                return (
+                    no_update,
+                    (
+                        True,  # show alert
+                        "danger",  # alert color
+                        str(e),  # alert message
+                    ),
+                    reset_config_file_store,
+                )
+        # render tab content
         if tab == ids.TAB_OVERVIEW:
             if (
                 selected_data is not None
@@ -176,7 +187,7 @@ def register_general_callbacks(app, pstore):
                 id=ids.ALERT,
                 color=color,
                 dismissable=True,
-                duration=4000,
+                duration=5000,
                 fade=True,
                 is_open=is_open,
             ),
