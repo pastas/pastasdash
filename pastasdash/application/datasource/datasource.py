@@ -85,8 +85,29 @@ class PastaStoreInterface:
         # delete registered functions and attributes so they are overwritten by new
         # pastastore
         for func_or_attr in self.registered_funcs:
-            delattr(self, func_or_attr)
+            if hasattr(self, func_or_attr):
+                delattr(self, func_or_attr)
+        self._check_pastastore_metadata()
         self._register_pastastore_methods()
+
+    def _check_pastastore_metadata(self):
+        """Check if required metadata is in PastaStore."""
+        msg = "Required metadata not found in PastaStore. "
+        raise_error = False
+        missing_cols = []
+        for k, v in self.column_mapping.items():
+            if v not in self.pstore.oseries.columns:
+                # msg += f"\n - No column '{v}' representing '{k}' found in oseries."
+                missing_cols.append(f"{k}:{v}")
+                raise_error = True
+        msg += "Missing (name:expected name): " + ", ".join(missing_cols) + " "
+        msg += (
+            "\nTo fix, modify the default kwargs in PastaStoreInterface in "
+            "'pastasdash/application/datasource/datasource.py'. We are working "
+            "on a more user-friendly solution."
+        )
+        if raise_error:
+            raise ValueError(msg)
 
     def _register_pastastore_methods(self):
         """Register PastaStore methods to PastaStoreInterface object."""
