@@ -172,7 +172,7 @@ class PastaStoreInterface:
         return stresses
 
     @property
-    @functools.lru_cache
+    @functools.lru_cache  # noqa: B019
     def unique_parameters(self):
         param_set = set()
         for mldict in self.pstore.get_models(None, return_dict=True):
