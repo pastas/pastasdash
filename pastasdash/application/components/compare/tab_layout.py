@@ -24,7 +24,7 @@ def render():
         overview tab
     """
     return dcc.Tab(
-        label="Compare models",
+        label="Compare Models",
         value=ids.TAB_COMPARE,
         className="custom-tab",
         selected_className="custom-tab--selected",
