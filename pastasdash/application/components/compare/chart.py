@@ -1,4 +1,5 @@
 import pastas as ps
+import plotly.express as px
 import plotly.graph_objs as go
 from dash import dcc, html
 
@@ -47,12 +48,16 @@ def plot_model_comparison(mllist, tmin=None, tmax=None):
     dict
         dictionary containing plotly Scatter data and layout
     """
+    colors = px.colors.qualitative.Plotly
+
     traces = []
 
     if isinstance(mllist, ps.Model):
         mllist = [mllist]
 
-    for ml in mllist:
+    for i, ml in enumerate(mllist):
+        color = colors[i % len(colors)]
+
         o = ml.observations()
         o_nu = ml.oseries.series.drop(o.index)
 
@@ -71,7 +76,11 @@ def plot_model_comparison(mllist, tmin=None, tmax=None):
                 x=o.index,
                 y=o.values,
                 mode="markers",
-                marker={"color": "black", "size": 5},
+                marker={
+                    "line": {"color": "black", "width": 1.0},
+                    "color": color,
+                    "size": 5,
+                },
                 name=ml.oseries.name,
                 legendgroup="oseries",
             )
@@ -82,7 +91,7 @@ def plot_model_comparison(mllist, tmin=None, tmax=None):
                 x=o.index,
                 y=o.values,
                 mode="markers",
-                marker_color="black",
+                marker={"line": {"color": "black", "width": 1.0}, "color": color},
                 name=ml.oseries.name,
                 legendgroup=ml.oseries.name,
             )
@@ -94,6 +103,7 @@ def plot_model_comparison(mllist, tmin=None, tmax=None):
             y=sim.values,
             mode="lines",
             # marker_color="#1F77B4",
+            marker={"color": color},
             name=f"Sim (R<sup>2</sup> = {ml.stats.rsq():.3f})",
             legendgroup=ml.name,
         )
