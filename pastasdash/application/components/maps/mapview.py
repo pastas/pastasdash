@@ -111,7 +111,7 @@ def plot_mapview_results(pstore, data, value: str, cmap: str, cmin=None, cmax=No
             # we want the map to be "parallel" to our screen, with no angle
             "pitch": 0,
             # default level of zoom
-            "zoom": zoom + 4,
+            "zoom": zoom,
             # default map style (some options listed, not all support labels)
             "style": "outdoors",
             # public styles
@@ -134,7 +134,9 @@ def plot_mapview_results(pstore, data, value: str, cmap: str, cmin=None, cmax=No
     }
 
     # stresses data for map
-    stresses = add_latlon_to_dataframe(pstore.stresses.reset_index())
+    stresses = add_latlon_to_dataframe(
+        pstore.stresses.reset_index(drop=("name" in pstore.stresses.columns))
+    )
     kind_dict = {}
     for i, k in enumerate(stresses.kind.unique()):
         kind_dict[k] = px.colors.qualitative.G10[i]
@@ -179,9 +181,15 @@ def plot_mapview_results(pstore, data, value: str, cmap: str, cmin=None, cmax=No
     data = get_value_from_pastastore(pstore, value)
 
     # TODO: add model oseries name as column and join on that
-    mdata = data.join(oseries).reset_index()
+    mdata = data.join(oseries).reset_index(drop=("name" in oseries.columns))
 
-    mdata["z"] = mdata.loc[:, ["screen_top", "screen_bot"]].mean(axis=1)
+    mdata["z"] = mdata.loc[
+        :,
+        [
+            pstore.column_mapping["screen_top"],
+            pstore.column_mapping["screen_bottom"],
+        ],
+    ].mean(axis=1)
     mdata.sort_values("z", ascending=True, inplace=True)
     msize = 15 + 100 * (mdata["z"].max() - mdata["z"]) / (
         mdata["z"].max() - mdata["z"].min()

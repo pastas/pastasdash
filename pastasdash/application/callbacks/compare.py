@@ -86,7 +86,7 @@ def register_compare_callbacks(app, pstore):
             # get selected points
             if pts is not None and not pts.empty:
                 idx = pts.loc[pts.curveNumber == 0, "pointNumber"].values
-                oseries = oseries.reset_index().set_index("id").loc[idx].reset_index()
+                oseries = oseries.reset_index(drop=("name" in oseries.columns)).set_index("id").loc[idx].reset_index()
 
             table = oseries.to_dict("records")
             selected_rows = [i for i, _ in enumerate(table)]
@@ -95,7 +95,7 @@ def register_compare_callbacks(app, pstore):
         else:
             # necessary to return all options when selectedData is None
             return (
-                oseries.reset_index().to_dict("records"),
+                oseries.reset_index(drop=("name" in oseries.columns)).to_dict("records"),
                 list(range(oseries.index.size)),
                 list(range(oseries.index.size)),
             )

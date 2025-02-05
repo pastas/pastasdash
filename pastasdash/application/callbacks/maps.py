@@ -46,7 +46,9 @@ def register_maps_callbacks(app, pstore):
             cmin_input, _, stepmin = derive_input_parameters(cmin, precision=2)
             cmax_input, _, stepmax = derive_input_parameters(cmax, precision=2)
 
-            data = data.join(pstore.oseries).reset_index()
+            data = data.join(pstore.oseries).reset_index(
+                drop="name" in pstore.oseries.columns
+            )
             return (
                 plot_mapview_results(pstore, data, value, cmap, cmin=cmin, cmax=cmax),
                 data.to_dict("records"),

@@ -102,9 +102,15 @@ def plot_mapview(
                     "curveNumber": 0,
                     "pointNumber": idx,
                     "pointIndex": idx,
-                    "lon": oseries.reset_index().set_index("id").loc[idx, "lon"],
-                    "lat": oseries.reset_index().set_index("id").loc[idx, "lat"],
-                    "text": oseries.reset_index().set_index("id").loc[idx, "name"],
+                    "lon": oseries.reset_index(drop=("name" in oseries.columns))
+                    .set_index("id")
+                    .loc[idx, "lon"],
+                    "lat": oseries.reset_index(drop=("name" in oseries.columns))
+                    .set_index("id")
+                    .loc[idx, "lat"],
+                    "text": oseries.reset_index(drop=("name" in oseries.columns))
+                    .set_index("id")
+                    .loc[idx, "name"],
                 }
                 for idx in pts_data
             ]
@@ -196,9 +202,13 @@ def plot_mapview(
         zoom, center = get_plotting_zoom_level_and_center_coordinates(
             oseries.lon.values, oseries.lat.values
         )
-        zoom = zoom + 3  # NOTE: manual correction to show all obs
+        zoom = zoom - 1  # NOTE: manual correction to show all obs
     else:
-        sel = oseries.reset_index().set_index("id").loc[pts_data]
+        sel = (
+            oseries.reset_index(drop=("name" in oseries.columns))
+            .set_index("id")
+            .loc[pts_data]
+        )
         zoom, center = get_plotting_zoom_level_and_center_coordinates(
             sel.lon.values, sel.lat.values
         )

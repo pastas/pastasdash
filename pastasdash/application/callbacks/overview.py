@@ -89,10 +89,10 @@ def register_overview_callbacks(app, pstore):
             # "name",
             # "nitg_code",
             # "tube_number",
-            "x",
-            "y",
-            "screen_top",
-            "screen_bot",
+            pstore.column_mapping["x"],
+            pstore.column_mapping["y"],
+            pstore.column_mapping["screen_top"],
+            pstore.column_mapping["screen_bottom"],
             # "metingen",
         ]
         # check for newest entry whether selection was made from table
@@ -229,7 +229,11 @@ def register_overview_callbacks(app, pstore):
         loc = df.loc[rows]
         pts = loc.index.tolist()
 
-        dfm = pstore.oseries.reset_index().set_index("id").loc[pts]
+        dfm = (
+            pstore.oseries.reset_index(drop=("name" in pstore.oseries.columns))
+            .set_index("id")
+            .loc[pts]
+        )
         dfm["curveNumber"] = 0
         # update selected points
         mappatch = Patch()

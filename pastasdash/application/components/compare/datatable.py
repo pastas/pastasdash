@@ -30,7 +30,7 @@ def render_metadata_table(pstore: PastaStoreInterface, selected_data=None):
     and its cells is customized, including conditional styling for selected
     rows.
     """
-    oseries = pstore.oseries.reset_index()
+    oseries = pstore.oseries.reset_index(drop=("name" in pstore.oseries.columns))
 
     oseries["n_models"] = [
         len(pstore.oseries_models.get(o, [])) for o in oseries["name"]
@@ -39,10 +39,10 @@ def render_metadata_table(pstore: PastaStoreInterface, selected_data=None):
     usecols = [
         "id",
         "name",
-        "x",
-        "y",
-        "screen_top",
-        "screen_bot",
+        pstore.column_mapping["x"],
+        pstore.column_mapping["y"],
+        pstore.column_mapping["screen_top"],
+        pstore.column_mapping["screen_bottom"],
         "n_models",
     ]
     return html.Div(

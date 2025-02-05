@@ -37,7 +37,7 @@ class PastaStoreInterface:
         x="x",
         y="y",
         screen_top="screen_top",
-        screen_bot="screen_bot",
+        screen_bottom="screen_bottom",
         lat=None,
         lon=None,
         crs="epsg:28992",
@@ -58,7 +58,7 @@ class PastaStoreInterface:
             "x": x,
             "y": y,
             "screen_top": screen_top,
-            "screen_bot": screen_bot,
+            "screen_bottom": screen_bottom,
         }
         if lat is None:
             self.column_mapping["lat"] = "lat"
@@ -96,9 +96,12 @@ class PastaStoreInterface:
         raise_error = False
         missing_cols = []
         for k, v in self.column_mapping.items():
+            # skip lat lon, as they are computed later if not present
+            if v in ["lat", "lon"]:
+                continue
             if v not in self.pstore.oseries.columns:
                 # msg += f"\n - No column '{v}' representing '{k}' found in oseries."
-                missing_cols.append(f"{k}:{v}")
+                missing_cols.append(f"{k}: {v}")
                 raise_error = True
         msg += "Missing (name:expected name): " + ", ".join(missing_cols) + " "
         msg += (
@@ -107,6 +110,7 @@ class PastaStoreInterface:
             "on a more user-friendly solution."
         )
         if raise_error:
+            print(msg)
             raise ValueError(msg)
 
     def _register_pastastore_methods(self):
@@ -148,7 +152,13 @@ class PastaStoreInterface:
                 )
             oseries["kind"] = "oseries"
 
-            oseries["z"] = oseries.loc[:, ["screen_top", "screen_bot"]].mean(axis=1)
+            oseries["z"] = oseries.loc[
+                :,
+                [
+                    self.column_mapping["screen_top"],
+                    self.column_mapping["screen_bottom"],
+                ],
+            ].mean(axis=1)
             oseries.sort_values("z", ascending=True, inplace=True)
             oseries["id"] = np.arange(oseries.index.size)
             oseries = oseries.join(self.oseries_stats(tuple(self.pstore.oseries_names)))
@@ -156,13 +166,13 @@ class PastaStoreInterface:
             oseries = pd.DataFrame(
                 columns=[
                     "kind",
-                    "x",
-                    "y",
+                    self.column_mapping["x"],
+                    self.column_mapping["y"],
                     "z",
-                    "lat",
-                    "lon",
-                    "screen_top",
-                    "screen_bot",
+                    self.column_mapping["lat"],
+                    self.column_mapping["lon"],
+                    self.column_mapping["screen_top"],
+                    self.column_mapping["screen_bottom"],
                     "id",
                     "n_observations",
                     "tmin",
@@ -202,7 +212,16 @@ class PastaStoreInterface:
 
     @property
     def timeseries(self):
-        usecols = ["id", "kind", "x", "y", "lat", "lon", "screen_top", "screen_bot"]
+        usecols = [
+            "id",
+            "kind",
+            self.column_mapping["x"],
+            self.column_mapping["y"],
+            self.column_mapping["lat"],
+            self.column_mapping["lon"],
+            self.column_mapping["screen_top"],
+            self.column_mapping["screen_bottom"],
+        ]
         df = pd.concat([self.oseries, self.stresses])
         df["id"] = np.arange(df.index.size)
         return df[usecols]

@@ -30,17 +30,17 @@ def render(pstore: PastaStoreInterface, selected_data=None):
     and its cells is customized, including conditional styling for selected
     rows.
     """
-    oseries = pstore.oseries.reset_index()
+    oseries = pstore.oseries.reset_index(drop=("name" in pstore.oseries.columns))
 
     usecols = [
         "id",
         "name",
         # "nitg_code",
         # "tube_number",
-        "screen_top",
-        "screen_bot",
-        "x",
-        "y",
+        pstore.column_mapping["screen_top"],
+        pstore.column_mapping["screen_bottom"],
+        pstore.column_mapping["x"],
+        pstore.column_mapping["y"],
         "n_observations",
         "tmin",
         "tmax",
@@ -69,25 +69,25 @@ def render(pstore: PastaStoreInterface, selected_data=None):
                     #     # "format": Format(scheme="r", precision=1),
                     # },
                     {
-                        "id": "x",
+                        "id": pstore.column_mapping["x"],
                         "name": "X",
                         "type": "numeric",
                         "format": Format(scheme="r", precision=5),
                     },
                     {
-                        "id": "y",
+                        "id": pstore.column_mapping["y"],
                         "name": "Y",
                         "type": "numeric",
                         "format": Format(scheme="r", precision=6),
                     },
                     {
-                        "id": "screen_top",
+                        "id": pstore.column_mapping["screen_top"],
                         "name": "Screen top",
                         "type": "numeric",
                         "format": {"specifier": ".2f"},
                     },
                     {
-                        "id": "screen_bot",
+                        "id": pstore.column_mapping["screen_bottom"],
                         "name": "Screen bottom",
                         "type": "numeric",
                         "format": {"specifier": ".2f"},
