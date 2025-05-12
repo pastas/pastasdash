@@ -9,13 +9,13 @@ from pastasdash.application.cache import cache
 from pastasdash.application.callbacks import register_callbacks
 from pastasdash.application.components.layout import create_layout
 from pastasdash.application.datasource import PastaStoreInterface
-from pastasdash.application.settings import CUSTOM_CSS_PATH
+from pastasdash.application.settings import CUSTOM_CSS_PATH, settings
 
 logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-ps.set_log_level("WARNING")
+ps.set_log_level(settings["LOG_LEVEL"])
 
 # %% set some variables
 external_stylesheets = [
