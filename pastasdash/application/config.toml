@@ -4,4 +4,6 @@ CACHING = false              # set to True to enable caching
 SERIES_LOAD_LIMIT = 20       # number of observations to load and plot simultaneously
 PORT = 8050                  # default port for the Dash app
 BACKGROUND_CALLBACKS = false # set to True to run some callbacks in the background
-PARALLEL = false              # allow pastastore to use parallel processing
+PARALLEL = false             # allow pastastore to use parallel processing
+LOG_LEVEL = "WARNING"        # set to "WARNING", "INFO" or "DEBUG" to see more detailed logging
+SHOW_STDERR = false          # show estimated stderr in plots

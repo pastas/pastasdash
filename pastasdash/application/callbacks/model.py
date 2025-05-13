@@ -9,6 +9,7 @@ from pastas.extensions import register_plotly
 from pastas.io.pas import PastasEncoder
 
 from pastasdash.application.components.shared import ids
+from pastasdash.application.settings import settings
 
 register_plotly()
 
@@ -59,7 +60,7 @@ def register_model_callbacks(app, pstore):
             try:
                 ml = pstore.get_models(value)
                 return (
-                    ml.plotly.results(),
+                    ml.plotly.results(stderr=settings["SHOW_STDERR"]),
                     ml.plotly.diagnostics(),
                     False,
                     (
